@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>🕹️ متجر بلايستيشن 3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(to bottom, #0d1117, #0a0a0a);
+      color: white;
+    }
+    .navbar {
+      background: #0a84ff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .profile img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    .auth-box {
+      text-align: center;
+      padding: 30px;
+    }
+    .auth-box input {
+      margin: 8px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      background: #222;
+      color: white;
+      width: 90%;
+      max-width: 300px;
+    }
+    .auth-box button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #4caf50;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      background: #111;
+      padding: 10px;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .tab:hover, .tab.active {
+      background: #0a84ff;
+    }
+    .container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+    .app {
+      background: #1c1c1c;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .app img {
+      width: 100%;
+      border-radius: 10px;
+      height: 360px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <span>🕹️ متجر بلايستيشن 3</span>
+  <div class="profile" id="userProfile" style="display:none;">
+    <img src="" id="profilePic" alt="صورة المستخدم">
+    <span id="userName"></span>
+    <button onclick="logout()">خروج</button>
+  </div>
+</div>
+
+<div class="auth-box" id="authBox">
+  <input type="email" id="email" placeholder="📧 البريد الإلكتروني" />
+  <input type="password" id="password" placeholder="🔒 كلمة المرور" />
+  <input type="text" id="displayName" placeholder="👤 الاسم الكامل" />
+  <input type="file" id="imageFile" />
+  <button onclick="signup()">📝 إنشاء حساب</button>
+  <button onclick="login()">🔓 تسجيل دخول</button>
+</div>
+
+<div class="tabs" id="tabs" style="display:none">
+  <div class="tab active" onclick="filter('game')">🎮 ألعاب</div>
+  <div class="tab" onclick="filter('tool')">🛠 أدوات</div>
+  <div class="tab" onclick="filter('app')">📱 تطبيقات</div>
+  <div class="tab" onclick="location.href='v.html'">💬 حل المشاكل pc3</div>
+</div>
+
+<div class="container" id="apps"></div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyABzu5cfLIn2YdhtPrC__CIkQ3z9hK35Cw",
+    authDomain: "pazxc-853ac.firebaseapp.com",
+    projectId: "pazxc-853ac",
+    storageBucket: "pazxc-853ac.appspot.com",
+    messagingSenderId: "806255799903",
+    appId: "1:806255799903:web:aae2080f239e3148d4bcde",
+    databaseURL: "https://pazxc-853ac-default-rtdb.firebaseio.com"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  const authBox = document.getElementById("authBox");
+  const userProfile = document.getElementById("userProfile");
+  const profilePic = document.getElementById("profilePic");
+  const userName = document.getElementById("userName");
+  const tabs = document.getElementById("tabs");
+  const appsDiv = document.getElementById("apps");
+  let allApps = [];
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      firebase.database().ref('users/' + user.uid).once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          userName.innerText = data.name;
+          profilePic.src = data.imageURL;
+        }
+        authBox.style.display = "none";
+        userProfile.style.display = "flex";
+        tabs.style.display = "flex";
+        loadApps();
+      });
+    } else {
+      authBox.style.display = "block";
+      userProfile.style.display = "none";
+      tabs.style.display = "none";
+      appsDiv.innerHTML = "";
+    }
+  });
+
+  function signup() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const name = document.getElementById("displayName").value.trim();
+    const file = document.getElementById("imageFile").files[0];
+
+    if (!email || !password || !name || !file) {
+      alert("يرجى إدخال جميع البيانات");
+      return;
+    }
+
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then(cred => {
+        const uid = cred.user.uid;
+        const storageRef = firebase.storage().ref('profileImages/' + uid);
+        return storageRef.put(file).then(() => storageRef.getDownloadURL())
+          .then(url => {
+            return firebase.database().ref('users/' + uid).set({
+              name: name,
+              imageURL: url,
+              email: email
+            });
+          });
+      })
+      .then(() => alert("✅ تم إنشاء الحساب بنجاح"))
+      .catch(err => alert("❌ خطأ: " + err.message));
+  }
+
+  function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    if (!email || !password) {
+      alert("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+      return;
+    }
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .catch(err => alert("❌ خطأ: " + err.message));
+  }
+
+  function logout() {
+    firebase.auth().signOut();
+  }
+
+  function loadApps() {
+    firebase.database().ref("apps").on("value", snapshot => {
+      allApps = [];
+      snapshot.forEach(child => {
+        allApps.push(child.val());
+      });
+      filter('game');
+    });
+  }
+
+  function filter(type) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const activeTab = document.querySelector(`.tab[onclick="filter('${type}')"]`);
+    if (activeTab) activeTab.classList.add('active');
+
+    appsDiv.innerHTML = '';
+    const filtered = allApps.filter(app => app.type === type);
+    if (filtered.length === 0) {
+      appsDiv.innerHTML = '<p style="text-align:center;">⚠️ لا توجد عناصر حالياً.</p>';
+      return;
+    }
+    filtered.forEach(app => {
+      const div = document.createElement("div");
+      div.className = "app";
+      div.innerHTML = `
+        <img src="${app.image}" alt="${app.name}">
+        <h3>${app.name}</h3>
+        <button onclick="openDetails('${app.name}', '${app.image}', '${app.file}')">📄 تفاصيل</button>
+      `;
+      appsDiv.appendChild(div);
+    });
+  }
+
+  function openDetails(name, image, file) {
+    window.location.href = `plm.html?name=${encodeURIComponent(name)}&image=${encodeURIComponent(image)}&file=${encodeURIComponent(file)}`;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>📄 مشاكل وحلول PS3 المهكر</title>
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Cairo', sans-serif, Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 700;
+      color: #00ff99;
+    }
+    .problem {
+      background: #222;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      padding: 15px 20px;
+      box-shadow: 0 0 8px #00ff99aa;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+    .problem:hover {
+      background: #333;
+    }
+    .title {
+      font-size: 1.2em;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #00ffcc;
+    }
+    .solution {
+      font-size: 1em;
+      line-height: 1.5;
+      display: none;
+      margin-top: 10px;
+      border-top: 1px solid #00ff99;
+      padding-top: 10px;
+      color: #bbb;
+      white-space: pre-wrap;
+    }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #555;
+      font-size: 0.9em;
+    }
+    #auth-container {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 5px #00ff99aa;
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      width: 90%;
+      max-width: 300px;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      background: #00ff99;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #00dd88;
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+</head>
+<body>
+
+<h1>📄 مشاكل وحلول PS3 المهكر</h1>
+
+<div id="auth-container">
+  <div id="user-info" style="display:none;">
+    👤 مرحبًا <span id="user-email"></span> | 
+    <button onclick="logout()">تسجيل الخروج</button>
+  </div>
+
+  <div id="login-form">
+    <input type="email" id="email" placeholder="البريد الإلكتروني"><br>
+    <input type="password" id="password" placeholder="كلمة المرور"><br>
+    <button onclick="login()">تسجيل الدخول</button>
+    <button onclick="signup()">إنشاء حساب</button>
+  </div>
+</div>
+
+<div id="problems-container">
+  جاري تحميل المشاكل...
+</div>
+
+<footer>© 2025 متجر PS3 المهكر - جميع الحقوق محفوظة</footer>
+
+<script>
+  // إعدادات Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyABzu5cfLIn2YdhtPrC__CIkQ3z9hK35Cw",
+    authDomain: "pazxc-853ac.firebaseapp.com",
+    databaseURL: "https://pazxc-853ac-default-rtdb.firebaseio.com",
+    projectId: "pazxc-853ac",
+    storageBucket: "pazxc-853ac.appspot.com",
+    messagingSenderId: "806255799903",
+    appId: "1:806255799903:web:aae2080f239e3148d4bcde"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const db = firebase.database();
+
+  function login() {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    firebase.auth().signInWithEmailAndPassword(email, pass)
+      .catch(e => alert("خطأ في تسجيل الدخول: " + e.message));
+  }
+
+  function signup() {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    firebase.auth().createUserWithEmailAndPassword(email, pass)
+      .catch(e => alert("خطأ في إنشاء الحساب: " + e.message));
+  }
+
+  function logout() {
+    firebase.auth().signOut();
+  }
+
+  firebase.auth().onAuthStateChanged(user => {
+    const authBox = document.getElementById("auth-container");
+    const loginForm = document.getElementById("login-form");
+    const userInfo = document.getElementById("user-info");
+
+    if (user) {
+      loginForm.style.display = "none";
+      userInfo.style.display = "block";
+      document.getElementById("user-email").textContent = user.email;
+      loadProblems(); // تحميل المشاكل
+    } else {
+      userInfo.style.display = "none";
+      loginForm.style.display = "block";
+      document.getElementById('problems-container').innerHTML = '<p style="text-align:center;color:#888;">يرجى تسجيل الدخول لعرض المشاكل.</p>';
+    }
+  });
+
+  function loadProblems() {
+    const container = document.getElementById('problems-container');
+    db.ref('problems').orderByChild('timestamp').once('value')
+      .then(snapshot => {
+        container.innerHTML = '';
+
+        if (!snapshot.exists()) {
+          container.innerHTML = '<p style="text-align:center;color:#888;">لا توجد مشاكل مسجلة حتى الآن.</p>';
+          return;
+        }
+
+        snapshot.forEach(childSnap => {
+          const data = childSnap.val();
+          const div = document.createElement('div');
+          div.className = 'problem';
+
+          const titleDiv = document.createElement('div');
+          titleDiv.className = 'title';
+          titleDiv.textContent = `🔧 ${data.title}`;
+
+          const solutionDiv = document.createElement('div');
+          solutionDiv.className = 'solution';
+          solutionDiv.textContent = data.solution;
+
+          div.appendChild(titleDiv);
+          div.appendChild(solutionDiv);
+
+          div.addEventListener('click', () => {
+            solutionDiv.style.display = solutionDiv.style.display === 'block' ? 'none' : 'block';
+          });
+
+          container.appendChild(div);
+        });
+      })
+      .catch(error => {
+        container.innerHTML = `<p style="color:red;text-align:center;">حدث خطأ أثناء تحميل المشاكل: ${error.message}</p>`;
+      });
+  }
+</script>
+
+</body>
+</html>

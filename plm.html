@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>تفاصيل التطبيق</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #050a14, #0a142b, #0f1a40);
+      color: #e0e7ff;
+      font-family: 'Cairo', sans-serif;
+      margin: 0; padding: 20px;
+      display: flex; justify-content: center;
+    }
+    .container {
+      background: rgba(15, 26, 55, 0.95);
+      border-radius: 20px;
+      padding: 25px;
+      max-width: 700px; width: 100%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 30px #3f51b5aa;
+    }
+    h1 {
+      text-align: center;
+      color: #c5cae9;
+    }
+    #appImage {
+      width: 100%; border-radius: 18px;
+      max-height: 340px; object-fit: cover;
+      margin-bottom: 20px;
+    }
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0; margin-bottom: 20px;
+    }
+    .video-wrapper iframe {
+      position: absolute; top:0; left:0;
+      width: 100%; height: 100%;
+      border: none; border-radius: 12px;
+    }
+    .btn {
+      display: block; width: 100%;
+      padding: 14px; background: #3f51b5;
+      color: white; border: none;
+      border-radius: 10px; font-size: 1.2rem;
+      cursor: pointer; margin-bottom: 10px;
+    }
+    #downloadStatus {
+      text-align: center; margin-bottom: 20px;
+    }
+    #comments {
+      background: #1c2b4d;
+      border-radius: 15px; padding: 15px;
+    }
+    #comments h2 {
+      color: #c5cae9;
+    }
+    .comment {
+      background: #283593cc;
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%; padding: 10px;
+      border-radius: 10px; resize: vertical;
+      min-height: 60px;
+    }
+    #addCommentBtn {
+      width: 100%; margin-top: 10px;
+      background: #4caf50; color: white;
+      border: none; padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="appName">اسم التطبيق</h1>
+    <img id="appImage" src="" alt="صورة التطبيق" />
+    <div id="videoContainer" class="video-wrapper"></div>
+    <button id="downloadBtn" class="btn">⬇️ تحميل التطبيق</button>
+    <p id="downloadStatus"></p>
+
+    <div id="comments">
+      <h2>تعليقات المستخدمين</h2>
+      <div id="commentsList">جاري تحميل التعليقات...</div>
+      <textarea id="commentInput" placeholder="سجّل الدخول لإضافة تعليق..." disabled></textarea>
+      <button id="addCommentBtn" disabled>إضافة تعليق</button>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyABzu5cfLIn2YdhtPrC__CIkQ3z9hK35Cw",
+      authDomain: "pazxc-853ac.firebaseapp.com",
+      databaseURL: "https://pazxc-853ac-default-rtdb.firebaseio.com",
+      projectId: "pazxc-853ac",
+      storageBucket: "pazxc-853ac.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Get parameters
+    const params = new URLSearchParams(window.location.search);
+    const appName = params.get('name') || 'بدون اسم';
+    const appImage = params.get('image') || '';
+    const appFile = params.get('file') || '';
+    const appVideo = params.get('video') || '';
+
+    // Show data
+    document.getElementById('appName').textContent = appName;
+    document.getElementById('appImage').src = appImage;
+
+    // YouTube Video Embed
+    const videoContainer = document.getElementById('videoContainer');
+    if (appVideo) {
+      let videoId = appVideo;
+      try {
+        const url = new URL(appVideo);
+        videoId = url.searchParams.get('v') || url.pathname.slice(1);
+      } catch (e) { /* assume it's just the ID */ }
+
+      videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+    } else {
+      videoContainer.style.display = 'none';
+    }
+
+    // تحميل
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadStatus = document.getElementById('downloadStatus');
+    downloadBtn.onclick = () => {
+      if (!appFile) return alert("لا يوجد رابط تحميل.");
+      downloadStatus.textContent = "جاري التحميل...";
+      const a = document.createElement('a');
+      a.href = appFile; a.target = "_blank"; a.download = "";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      downloadStatus.textContent = "✅ بدأ التحميل";
+    };
+
+    // تعليقات
+    const commentsList = document.getElementById('commentsList');
+    const commentInput = document.getElementById('commentInput');
+    const addCommentBtn = document.getElementById('addCommentBtn');
+
+    function escapeHtml(text) {
+      const map = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function loadComments() {
+      db.ref('comments/' + appName).on('value', snap => {
+        commentsList.innerHTML = '';
+        if (!snap.exists()) {
+          commentsList.innerHTML = "<p>لا توجد تعليقات بعد.</p>";
+          return;
+        }
+        snap.forEach(child => {
+          const c = child.val();
+          const div = document.createElement('div');
+          div.className = "comment";
+          div.innerHTML = `<strong>${escapeHtml(c.user)}</strong><br>${escapeHtml(c.text)}`;
+          commentsList.appendChild(div);
+        });
+      });
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        commentInput.disabled = false;
+        addCommentBtn.disabled = false;
+        commentInput.placeholder = "أضف تعليقك...";
+      }
+    });
+
+    addCommentBtn.onclick = () => {
+      const text = commentInput.value.trim();
+      const user = firebase.auth().currentUser;
+      if (!text || !user) return;
+      const userName = user.email || "مستخدم";
+      const key = db.ref('comments/' + appName).push().key;
+      db.ref('comments/' + appName + '/' + key).set({ user: userName, text });
+      commentInput.value = "";
+    };
+
+    loadComments();
+  </script>
+</body>
+</html>
