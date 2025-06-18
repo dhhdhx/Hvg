@@ -5,6 +5,8 @@
   <title>🕹️ متجر بلايستيشن 3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
     body {
       margin: 0;
@@ -16,27 +18,28 @@
       background: #0a84ff;
       padding: 10px 20px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      font-weight: bold;
     }
-    .auth-box {
-      text-align: center;
-      padding: 40px;
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      background: #111;
+      padding: 10px;
     }
-    .auth-box a {
-      display: inline-block;
-      margin: 10px 0;
-      background: #4caf50;
-      padding: 12px 24px;
+    .tab {
+      padding: 10px 20px;
+      background: #333;
       color: white;
-      border-radius: 10px;
-      font-size: 18px;
-      text-decoration: none;
-      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .tab:hover, .tab.active {
+      background: #0a84ff;
     }
     .container {
-      display: none;
       padding: 20px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -54,47 +57,22 @@
       height: 360px;
       object-fit: cover;
     }
-    .tabs {
-      display: none;
-      justify-content: center;
-      gap: 10px;
-      background: #111;
-      padding: 10px;
-    }
-    .tab {
-      padding: 10px 20px;
-      background: #333;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .tab:hover, .tab.active {
-      background: #0a84ff;
-    }
   </style>
 </head>
 <body>
 
-<div class="navbar">🕹️ متجر بلايستيشن 3</div>
-
-<div class="auth-box" id="authBox">
-  <p>🔒 لدخول المتجر، يرجى متابعة قناتنا على تيليجرام أولاً</p>
-  <a href="https://t.me/mplm8" target="_blank">📲 تابعنا على تيليجرام</a><br>
-  <a href="#" onclick="enterSite()">✅ دخلت القناة - ادخل للمتجر</a>
+<div class="navbar">
+  <span>🕹️ متجر بلايستيشن 3</span>
+  <button onclick="location.href='v.html'" style="background:#222; color:white; padding:6px 12px; border-radius:6px;">💬 حل المشاكل</button>
 </div>
 
-<div class="tabs" id="tabs">
+<div class="tabs">
   <div class="tab active" onclick="filter('game')">🎮 ألعاب</div>
   <div class="tab" onclick="filter('tool')">🛠 أدوات</div>
   <div class="tab" onclick="filter('app')">📱 تطبيقات</div>
-  <div class="tab" onclick="location.href='v.html'">💬 حل المشاكل pc3</div>
 </div>
 
 <div class="container" id="apps"></div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
   const firebaseConfig = {
@@ -106,16 +84,10 @@
     appId: "1:806255799903:web:aae2080f239e3148d4bcde",
     databaseURL: "https://pazxc-853ac-default-rtdb.firebaseio.com"
   };
+
   firebase.initializeApp(firebaseConfig);
-
+  const appsDiv = document.getElementById("apps");
   let allApps = [];
-
-  function enterSite() {
-    document.getElementById('authBox').style.display = 'none';
-    document.getElementById('tabs').style.display = 'flex';
-    document.getElementById('apps').style.display = 'grid';
-    loadApps();
-  }
 
   function loadApps() {
     firebase.database().ref("apps").on("value", snapshot => {
@@ -132,7 +104,6 @@
     const activeTab = document.querySelector(`.tab[onclick="filter('${type}')"]`);
     if (activeTab) activeTab.classList.add('active');
 
-    const appsDiv = document.getElementById("apps");
     appsDiv.innerHTML = '';
     const filtered = allApps.filter(app => app.type === type);
     if (filtered.length === 0) {
@@ -154,6 +125,8 @@
   function openDetails(name, image, file) {
     window.location.href = `plm.html?name=${encodeURIComponent(name)}&image=${encodeURIComponent(image)}&file=${encodeURIComponent(file)}`;
   }
+
+  window.onload = loadApps;
 </script>
 
 </body>
