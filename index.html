@@ -1,133 +1,41 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <title>🕹️ متجر بلايستيشن 3</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <title>🚫 لا يمكن الدخول</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0;
-      font-family: 'Cairo', sans-serif;
-      background: linear-gradient(to bottom, #0d1117, #0a0a0a);
+      background-color: #111;
       color: white;
-    }
-    .navbar {
-      background: #0a84ff;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      background: #111;
-      padding: 10px;
-    }
-    .tab {
-      padding: 10px 20px;
-      background: #333;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .tab:hover, .tab.active {
-      background: #0a84ff;
-    }
-    .container {
-      padding: 20px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
-    }
-    .app {
-      background: #1c1c1c;
-      padding: 10px;
-      border-radius: 10px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
+      padding: 50px;
     }
-    .app img {
-      width: 100%;
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
       border-radius: 10px;
-      height: 360px;
-      object-fit: cover;
+      font-size: 18px;
+    }
+    a:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
 
-<div class="navbar">
-  <span>🕹️ متجر بلايستيشن 3</span>
-  <button onclick="location.href='v.html'" style="background:#222; color:white; padding:6px 12px; border-radius:6px;">💬 حل المشاكل</button>
-</div>
-
-<div class="tabs">
-  <div class="tab active" onclick="filter('game')">🎮 ألعاب</div>
-  <div class="tab" onclick="filter('tool')">🛠 أدوات</div>
-  <div class="tab" onclick="filter('app')">📱 تطبيقات</div>
-</div>
-
-<div class="container" id="apps"></div>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyABzu5cfLIn2YdhtPrC__CIkQ3z9hK35Cw",
-    authDomain: "pazxc-853ac.firebaseapp.com",
-    projectId: "pazxc-853ac",
-    storageBucket: "pazxc-853ac.appspot.com",
-    messagingSenderId: "806255799903",
-    appId: "1:806255799903:web:aae2080f239e3148d4bcde",
-    databaseURL: "https://pazxc-853ac-default-rtdb.firebaseio.com"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const appsDiv = document.getElementById("apps");
-  let allApps = [];
-
-  function loadApps() {
-    firebase.database().ref("apps").on("value", snapshot => {
-      allApps = [];
-      snapshot.forEach(child => {
-        allApps.push(child.val());
-      });
-      filter('game');
-    });
-  }
-
-  function filter(type) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const activeTab = document.querySelector(`.tab[onclick="filter('${type}')"]`);
-    if (activeTab) activeTab.classList.add('active');
-
-    appsDiv.innerHTML = '';
-    const filtered = allApps.filter(app => app.type === type);
-    if (filtered.length === 0) {
-      appsDiv.innerHTML = '<p style="text-align:center;">⚠️ لا توجد عناصر حالياً.</p>';
-      return;
-    }
-    filtered.forEach(app => {
-      const div = document.createElement("div");
-      div.className = "app";
-      div.innerHTML = `
-        <img src="${app.image}" alt="${app.name}">
-        <h3>${app.name}</h3>
-        <button onclick="openDetails('${app.name}', '${app.image}', '${app.file}')">📄 تفاصيل</button>
-      `;
-      appsDiv.appendChild(div);
-    });
-  }
-
-  function openDetails(name, image, file) {
-    window.location.href = `plm.html?name=${encodeURIComponent(name)}&image=${encodeURIComponent(image)}&file=${encodeURIComponent(file)}`;
-  }
-
-  window.onload = loadApps;
-</script>
+  <h1>🚫 عذرًا، لا يمكن الدخول لهذه الصفحة</h1>
+  <p>يجب عليك تحميل التطبيق من التليجرام أولاً.</p>
+  <a href="https://t.me/mplm8" target="_blank">📥 تحميل التطبيق من التليجرام</a>
 
 </body>
 </html>
